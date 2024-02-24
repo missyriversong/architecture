@@ -1,6 +1,9 @@
 from django.db import models
 from django.urls import reverse # Used to generate URLs by reversing the URL patterns
 import uuid # Required for unique book instances
+from datetime import date
+from django.conf import settings 
+#need for User => borrower, see bookinstance
 
 # Create your models here.
 
@@ -54,6 +57,8 @@ class Book(models.Model):
         return ', '.join(genre.name for genre in self.genre.all()[:3])
     display_genre.short_description = 'Genre'
 
+
+
 class BookInstance(models.Model):
 
     """Model representing a specific copy of a book (i.e. that can be borrowed from the library)."""
@@ -67,6 +72,7 @@ class BookInstance(models.Model):
     #     help_text="Enter language",
     #     default='',
     # )
+    borrower = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
     LOAN_STATUS = (
         ('m', 'Maintenance'),
@@ -85,6 +91,14 @@ class BookInstance(models.Model):
 
     class Meta:
         ordering = ['due_back']
+        permissions = (("can_mark_returned", "Set book as returned"),)
+        #permissions?   -> {{perms}}  template var -> {% if perms.catalog.can_mark_returned %}
+        #https://testdriven.io/blog/django-permissions/
+
+    @property
+    def is_overdue(self):
+        """Determines if the book is overdue based on due date and current date."""
+        return bool(self.due_back and date.today() > self.due_back)
 
     def __str__(self):
         """String for representing the Model object."""
