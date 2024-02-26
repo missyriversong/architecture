@@ -38,7 +38,10 @@ class Book(models.Model):
                             unique=True,
                             help_text='13 Character <a href="https://www.isbn-international.org/content/what-isbn'
                                       '">ISBN number</a>')
+    language = models.ForeignKey('Language', on_delete=models.SET_NULL, null=True)
+    #forgot to add language
 
+    
     # ManyToManyField used because genre can contain many books. Books can cover many genres.
     # Genre class has already been defined so we can specify the object above.
     genre = models.ManyToManyField(
@@ -67,11 +70,11 @@ class BookInstance(models.Model):
     book = models.ForeignKey('Book', on_delete=models.RESTRICT, null=True)
     imprint = models.CharField(max_length=200)
     due_back = models.DateField(null=True, blank=True)
-    # language = models.CharField(
-    #     max_length=10,
-    #     help_text="Enter language",
-    #     default='',
-    # )
+    language = models.CharField(
+        max_length=10,
+        help_text="Enter language",
+        default='',
+    )
     borrower = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
     LOAN_STATUS = (
